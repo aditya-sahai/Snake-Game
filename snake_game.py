@@ -4,22 +4,25 @@ import random
 
 pygame.init()
 
-width = 500
-height = 500
+wall_thickness = 10
+width = 500 + 2 * wall_thickness
+height = 500 + 2 * wall_thickness
 
-green = (0, 255, 0)
 red = (255, 0, 0)
+green = (0, 255, 0)
+blue = (0, 0, 255)
 white = (255, 255, 255)
 black = (0, 0, 0)
 
 game_window = pygame.display.set_mode((width, height))
 pygame.display.set_caption('Snake Game')
+background_image = pygame.image.load('wall.png')
 heading_font = pygame.font.Font('game_over.ttf', 250)
 box_font = pygame.font.Font('game_over.ttf', 75)
 
 def GenerateApple(apple_size, width, height):
-    apple_x = random.randrange(0, width - (apple_size + 1), apple_size)
-    apple_y = random.randrange(0, height - (apple_size + 1), apple_size)
+    apple_x = random.randrange(10, width - (apple_size + 1), apple_size)
+    apple_y = random.randrange(10, height - (apple_size + 1), apple_size)
     return apple_x, apple_y
 
 def EatApple(head_rect, apple_rect, width, height, length):
@@ -29,18 +32,17 @@ def EatApple(head_rect, apple_rect, width, height, length):
         return length, apple_x, apple_y
     return length, apple_rect[0], apple_rect[1]
 
-def MoveSnake(snake, x_change, y_change, lead_x, lead_y, snake_length):
+def MoveSnake(snake, x_change, y_change, lead_x, lead_y, snake_length, size):
+    if (lead_x + x_change < wall_thickness or lead_x + size + x_change > width - wall_thickness) or (lead_y + y_change < wall_thickness or lead_y + size + y_change > height - wall_thickness):
+        return lead_x, lead_y, snake, True
+
     lead_x += x_change
     lead_y += y_change
     head = (lead_x, lead_y)
     snake.append(head)
-
+    
     if len(snake) > snake_length:
         del snake[0]
-
-    if (lead_x <= 0 or lead_x >= width) or (lead_y <= 0 or lead_y >= height):
-        return lead_x, lead_y, snake, True
-
     for segment in snake[:-1]:
         if segment == head:
             return lead_x, lead_y, snake, True
@@ -78,11 +80,12 @@ def DrawIntroWindow(win, width, height, buttons, color1, color2, box_width, box_
     WriteText(win, buttons[2], 'Map Color', box_font)
     pygame.display.update()
 
-def DrawGameWindow(win, width, height, bgcolor, snake, snake_size, snake_color, apple_rect):
-    win.fill(bgcolor)
+def DrawGameWindow(win, width, height, bgcolor, snake, snake_size, snake_color, apple_rect, wall_thickness):
+    win.blit(background_image, (0, 0))
+    pygame.draw.rect(win, red, apple_rect)
     for box in snake:
         pygame.draw.rect(win, snake_color, (box[0], box[1], snake_size, snake_size))
-    pygame.draw.rect(win, red, apple_rect)
+    pygame.draw.rect(win, blue, (0, 0, width, height), wall_thickness)
     pygame.display.update()
 
 button_box_width = 300
@@ -95,10 +98,10 @@ button_list = [
 
 running = True
 game_over = True
-pressed_button = None
+pressed_button = 0#None
 
 clock = pygame.time.Clock()
-
+'''
 while running:
 
     for event in pygame.event.get():
@@ -109,15 +112,15 @@ while running:
     DrawIntroWindow(game_window, width, height, button_list, green, red, button_box_width, button_box_height)
 
     clock.tick(10)
-
+'''
 if pressed_button == 0:
     game_over = False
 
 snake_size = 25
 x_change = 0
-y_change = -snake_size
-snake_x = int(width / 2)
-snake_y = int(height / 2)
+y_change = snake_size
+snake_x = int((width - 2 * wall_thickness) / 2) + 10
+snake_y = int((height - 2 * wall_thickness) / 2) + 10
 snake_length = 1
 snake_list = [(snake_x,snake_y)]
 head = snake_list[-1]
@@ -145,10 +148,10 @@ while not game_over:
             elif event.key == pygame.K_SPACE:
                 snake_length += 1
 
-    snake_x, snake_y, snake_list, game_over = MoveSnake(snake_list, x_change, y_change, snake_x, snake_y, snake_length)
+    snake_x, snake_y, snake_list, game_over = MoveSnake(snake_list, x_change, y_change, snake_x, snake_y, snake_length, snake_size)
     snake_length, apple_x, apple_y = EatApple(pygame.Rect(snake_x, snake_y, snake_size, snake_size), pygame.Rect(apple_x, apple_y, apple_size, apple_size), width, height, snake_length)
     apple_rect = pygame.Rect(apple_x, apple_y, apple_size, apple_size)
-    DrawGameWindow(game_window, width, height, black, snake_list, snake_size, green, apple_rect)
+    DrawGameWindow(game_window, width, height, black, snake_list, snake_size, green, apple_rect, wall_thickness)
 
     clock.tick(10)
 
