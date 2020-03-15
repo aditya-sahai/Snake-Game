@@ -111,26 +111,6 @@ button_list = [
     pygame.Rect(int((width - button_box_width) / 2), 425, button_box_width, button_box_height),
     ]
 
-running = True
-game_over = True
-pressed_button = 0#None
-
-clock = pygame.time.Clock()
-'''
-while running:
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-
-    pressed_button, running = CheckClick(button_list)
-    DrawIntroWindow(game_window, width, height, button_list, green, red, button_box_width, button_box_height)
-
-    clock.tick(10)
-'''
-if pressed_button == 0:
-    game_over = False
-
 snake_size = 25
 x_change = 0
 y_change = snake_size
@@ -153,44 +133,84 @@ wall_rects = [
 apple_size = snake_size
 apple_x, apple_y = GenerateApple(apple_size, width, height, wall_thickness, wall_rects)
 
-while not game_over:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            game_over = True
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_UP:
-                y_change = -snake_size
-                x_change = 0
-                direction = 'up'
-            elif event.key == pygame.K_DOWN:
-                y_change = snake_size
-                x_change = 0
-                direction = 'down'
-            elif event.key == pygame.K_LEFT:
-                y_change = 0
-                x_change = -snake_size
-                direction = 'left'
-            elif event.key == pygame.K_RIGHT:
-                y_change = 0
-                x_change = snake_size
-                direction = 'right'
+game_exit = False
+running = True
+game_over = True
+pressed_button = None
 
-    if direction == 'up':
-        rotated_head_img = pygame.transform.rotate(snake_head_img, 0)
-    elif direction == 'down':
-        rotated_head_img = pygame.transform.rotate(snake_head_img, 180)
-    elif direction == 'left':
-        rotated_head_img = pygame.transform.rotate(snake_head_img, 90)
-    elif direction == 'right':
-        rotated_head_img = pygame.transform.rotate(snake_head_img, -90)
+clock = pygame.time.Clock()
 
-    snake_x, snake_y, snake_list, game_over = MoveSnake(snake_list, x_change, y_change, snake_x, snake_y, snake_length, snake_size, wall_rects)
-    snake_head_rect = pygame.Rect(snake_x, snake_y, snake_size, snake_size)
-    apple_rect = pygame.Rect(apple_x, apple_y, apple_size, apple_size)
-    snake_length, apple_x, apple_y = EatApple(snake_head_rect, apple_rect, width, height, snake_length, wall_thickness, wall_rects)
-    DrawGameWindow(game_window, width, height, black, snake_list, snake_size, green, apple_rect, wall_rects, snake_length, rotated_head_img)
+while not game_exit:
 
-    clock.tick(10)
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                game_exit = True
+                game_over = True
+                running = False
+
+        if running == True:
+            pressed_button, running = CheckClick(button_list)
+            DrawIntroWindow(game_window, width, height, button_list, green, red, button_box_width, button_box_height)
+
+        clock.tick(10)
+
+    if pressed_button == 0 and game_over == False:
+        game_over = False
+
+    while not game_over:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                game_over = True
+                game_exit = True
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    y_change = -snake_size
+                    x_change = 0
+                    direction = 'up'
+                elif event.key == pygame.K_DOWN:
+                    y_change = snake_size
+                    x_change = 0
+                    direction = 'down'
+                elif event.key == pygame.K_LEFT:
+                    y_change = 0
+                    x_change = -snake_size
+                    direction = 'left'
+                elif event.key == pygame.K_RIGHT:
+                    y_change = 0
+                    x_change = snake_size
+                    direction = 'right'
+
+        if direction == 'up':
+            rotated_head_img = pygame.transform.rotate(snake_head_img, 0)
+        elif direction == 'down':
+            rotated_head_img = pygame.transform.rotate(snake_head_img, 180)
+        elif direction == 'left':
+            rotated_head_img = pygame.transform.rotate(snake_head_img, 90)
+        elif direction == 'right':
+            rotated_head_img = pygame.transform.rotate(snake_head_img, -90)
+
+        if game_over == False:
+            snake_x, snake_y, snake_list, game_over = MoveSnake(snake_list, x_change, y_change, snake_x, snake_y, snake_length, snake_size, wall_rects)
+            snake_head_rect = pygame.Rect(snake_x, snake_y, snake_size, snake_size)
+            apple_rect = pygame.Rect(apple_x, apple_y, apple_size, apple_size)
+            snake_length, apple_x, apple_y = EatApple(snake_head_rect, apple_rect, width, height, snake_length, wall_thickness, wall_rects)
+            DrawGameWindow(game_window, width, height, black, snake_list, snake_size, green, apple_rect, wall_rects, snake_length, rotated_head_img)
+
+        clock.tick(10)
+
+    game_over = False
+    running = True
+    pressed_button = None
+
+    x_change = 0
+    y_change = snake_size
+    snake_x = int(width / 2)
+    snake_y = int(height / 2)
+    direction = 'down'
+    snake_length = 1
+    snake_list = [(snake_x,snake_y)]
+    head = snake_list[-1]
 
 pygame.quit()
 sys.exit()
