@@ -8,6 +8,8 @@ wall_thickness = 25
 width = 500 + 2 * wall_thickness
 height = 500 + 2 * wall_thickness
 
+snake_head_img = pygame.image.load('snake_head.png')
+
 red = (255, 0, 0)
 green = (0, 255, 0)
 blue = (0, 0, 255)
@@ -16,6 +18,8 @@ black = (0, 0, 0)
 
 game_window = pygame.display.set_mode((width, height))
 pygame.display.set_caption('Snake Game')
+pygame.display.set_icon(snake_head_img)
+
 heading_font = pygame.font.Font('game_over.ttf', 250)
 box_font = pygame.font.Font('game_over.ttf', 75)
 score_font = pygame.font.Font('game_over.ttf',60)
@@ -87,12 +91,13 @@ def DrawIntroWindow(win, width, height, buttons, color1, color2, box_width, box_
     WriteText(win, buttons[2], 'Map Color', box_font, black)
     pygame.display.update()
 
-def DrawGameWindow(win, width, height, bgcolor, snake, snake_size, snake_color, apple_rect, wall_rects, score):
+def DrawGameWindow(win, width, height, bgcolor, snake, snake_size, snake_color, apple_rect, wall_rects, score, head_img):
     win.fill(black)
     for wall in wall_rects:
         pygame.draw.rect(win, blue, wall)
     pygame.draw.rect(win, red, apple_rect)
-    for box in snake:
+    win.blit(head_img, (snake[-1]))
+    for box in snake[:-1]:
         pygame.draw.rect(win, snake_color, (box[0], box[1], snake_size, snake_size))
     score_rect = wall_rects[1]#pygame.Rect(width - int(width / 3), height - int(height / 5), int(width / 4), int(height / 4))
     WriteText(win, score_rect, 'Score: ' + str(score), score_font, white)
@@ -108,10 +113,10 @@ button_list = [
 
 running = True
 game_over = True
-pressed_button = None
+pressed_button = 0#None
 
 clock = pygame.time.Clock()
-
+'''
 while running:
 
     for event in pygame.event.get():
@@ -122,7 +127,7 @@ while running:
     DrawIntroWindow(game_window, width, height, button_list, green, red, button_box_width, button_box_height)
 
     clock.tick(10)
-
+'''
 if pressed_button == 0:
     game_over = False
 
@@ -131,6 +136,7 @@ x_change = 0
 y_change = snake_size
 snake_x = int(width / 2)
 snake_y = int(height / 2)
+direction = 'down'
 snake_length = 1
 snake_list = [(snake_x,snake_y)]
 head = snake_list[-1]
@@ -155,21 +161,34 @@ while not game_over:
             if event.key == pygame.K_UP:
                 y_change = -snake_size
                 x_change = 0
+                direction = 'up'
             elif event.key == pygame.K_DOWN:
                 y_change = snake_size
                 x_change = 0
+                direction = 'down'
             elif event.key == pygame.K_LEFT:
                 y_change = 0
                 x_change = -snake_size
+                direction = 'left'
             elif event.key == pygame.K_RIGHT:
                 y_change = 0
                 x_change = snake_size
+                direction = 'right'
+
+    if direction == 'up':
+        rotated_head_img = pygame.transform.rotate(snake_head_img, 0)
+    elif direction == 'down':
+        rotated_head_img = pygame.transform.rotate(snake_head_img, 180)
+    elif direction == 'left':
+        rotated_head_img = pygame.transform.rotate(snake_head_img, 90)
+    elif direction == 'right':
+        rotated_head_img = pygame.transform.rotate(snake_head_img, -90)
 
     snake_x, snake_y, snake_list, game_over = MoveSnake(snake_list, x_change, y_change, snake_x, snake_y, snake_length, snake_size, wall_rects)
     snake_head_rect = pygame.Rect(snake_x, snake_y, snake_size, snake_size)
     apple_rect = pygame.Rect(apple_x, apple_y, apple_size, apple_size)
     snake_length, apple_x, apple_y = EatApple(snake_head_rect, apple_rect, width, height, snake_length, wall_thickness, wall_rects)
-    DrawGameWindow(game_window, width, height, black, snake_list, snake_size, green, apple_rect, wall_rects, snake_length)
+    DrawGameWindow(game_window, width, height, black, snake_list, snake_size, green, apple_rect, wall_rects, snake_length, rotated_head_img)
 
     clock.tick(10)
 
