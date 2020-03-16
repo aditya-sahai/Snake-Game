@@ -43,7 +43,7 @@ def GenerateApple(apple_size, width, height, wall_thickness, map):
     apple_y = random.randrange(wall_thickness, height - (apple_size + 1), apple_size)
     for rect in map:
         if rect.colliderect((apple_x, apple_y, apple_size, apple_size)):
-            apple_x, apple_y = GenerateApple(apple_size, width, height, wall_thickness, map)
+            apple_y += apple_size
     return apple_x, apple_y
 
 def EatApple(head_rect, apple_rect, width, height, length, wall_thickness, wall_rects):
@@ -99,13 +99,13 @@ def DrawIntroWindow(win, width, height, buttons, color1, color2, box_width, box_
     DrawButtons(win, width, height, buttons, color1, color2, box_width, box_height)
     WriteText(win, buttons[0], 'Play', box_font, black)
     WriteText(win, buttons[1], 'Snake Color', box_font, black)
-    WriteText(win, buttons[2], 'Map Color', box_font, black)
+    WriteText(win, buttons[2], 'Change Map', box_font, black)
     pygame.display.update()
 
-def DrawGameWindow(win, width, height, bgcolor, snake, snake_size, snake_color, apple_rect, wall_rects, score, head_img):
+def DrawGameWindow(win, width, height, bgcolor, snake, snake_size, snake_color, apple_rect, wall_rects, score, head_img, map_color):
     win.fill(black)
     for wall in wall_rects:
-        pygame.draw.rect(win, blue, wall)
+        pygame.draw.rect(win, map_color, wall)
     pygame.draw.rect(win, red, apple_rect)
     win.blit(head_img, (snake[-1]))
     for box in snake[:-1]:
@@ -134,11 +134,11 @@ main_button_list = [
     ]
 
 snake_size = 25
-x_change = 0
-y_change = snake_size
+x_change = snake_size
+y_change = 0
 snake_x = int(width / 2)
 snake_y = int(height / 2)
-direction = 'down'
+direction = 'right'
 snake_length = 1
 snake_list = [(snake_x,snake_y)]
 head = snake_list[-1]
@@ -152,8 +152,36 @@ map_1 = [
     pygame.Rect(snake_x + 3 * snake_size, snake_y - 3 * snake_size, int(width / 2 - wall_thickness), wall_thickness)
     ]
 
+map_2 = [
+    pygame.Rect(0, 0, wall_thickness, height),
+    pygame.Rect(0, 0, width, wall_thickness),
+    pygame.Rect(width - wall_thickness, 0, wall_thickness, height),
+    pygame.Rect(0, height - wall_thickness, width, wall_thickness),
+    ]
+
+map_3 = [
+    pygame.Rect(0, 0, wall_thickness, height),
+    pygame.Rect(0, 0, width, wall_thickness),
+    pygame.Rect(width - wall_thickness, 0, wall_thickness, height),
+    pygame.Rect(0, height - wall_thickness, width, wall_thickness),
+    pygame.Rect(wall_thickness, 200, 250, wall_thickness),
+    pygame.Rect(350, 200, 175, wall_thickness),
+    pygame.Rect(wall_thickness, 350, 50, wall_thickness),
+    pygame.Rect(150, 350, 375, wall_thickness),
+    ]
+
+map_4 = [
+    pygame.Rect(0, 0, wall_thickness, height),
+    pygame.Rect(0, 0, width, wall_thickness),
+    pygame.Rect(width - wall_thickness, 0, wall_thickness, height),
+    pygame.Rect(0, height - wall_thickness, width, wall_thickness),
+    pygame.Rect(100, 125, 350, wall_thickness),
+    pygame.Rect(150, 300, 250, wall_thickness),
+    pygame.Rect(100, 400, 350, wall_thickness),
+    ]
+
 apple_size = snake_size
-apple_x, apple_y = GenerateApple(apple_size, width, height, wall_thickness, map_1)
+apple_x, apple_y = GenerateApple(apple_size, width, height, wall_thickness, map_4)
 
 color_button_list = MakeColorButtons((width - 100 * 2,snake_size))
 
@@ -222,11 +250,11 @@ while not game_exit:
             rotated_head_img = pygame.transform.rotate(snake_head_img, -90)
 
         if game_over == False:
-            snake_x, snake_y, snake_list, game_over = MoveSnake(snake_list, x_change, y_change, snake_x, snake_y, snake_length, snake_size, map_1)
+            snake_x, snake_y, snake_list, game_over = MoveSnake(snake_list, x_change, y_change, snake_x, snake_y, snake_length, snake_size, map_4)
         snake_head_rect = pygame.Rect(snake_x, snake_y, snake_size, snake_size)
         apple_rect = pygame.Rect(apple_x, apple_y, apple_size, apple_size)
         snake_length, apple_x, apple_y = EatApple(snake_head_rect, apple_rect, width, height, snake_length, wall_thickness, map_1)
-        DrawGameWindow(game_window, width, height, black, snake_list, snake_size, color_list[pressed_color_button], apple_rect, map_1, snake_length, rotated_head_img)
+        DrawGameWindow(game_window, width, height, black, snake_list, snake_size, color_list[pressed_color_button], apple_rect, map_4, snake_length, rotated_head_img, blue)
         if game_over == True:
             i = 1
             while i <= 50:
@@ -265,11 +293,11 @@ while not game_exit:
 
     snake_head_img = head_images[pressed_color_button]
 
-    x_change = 0
-    y_change = snake_size
+    x_change = snake_size
+    y_change = 0
     snake_x = int(width / 2)
     snake_y = int(height / 2)
-    direction = 'down'
+    direction = 'right'
     snake_length = 1
     snake_list = [(snake_x,snake_y)]
     head = snake_list[-1]
