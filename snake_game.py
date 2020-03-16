@@ -8,21 +8,35 @@ wall_thickness = 25
 width = 500 + 2 * wall_thickness
 height = 500 + 2 * wall_thickness
 
-snake_head_img = pygame.image.load('snake_head.png')
+red_head_img = pygame.image.load('red_head.png')
+green_head_img = pygame.image.load('green_head.png')
+blue_head_img = pygame.image.load('blue_head.png')
+yellow_head_img = pygame.image.load('yellow_head.png')
+magenta_head_img = pygame.image.load('magenta_head.png')
+head_images = [red_head_img, green_head_img, blue_head_img, yellow_head_img, magenta_head_img]
 
 red = (255, 0, 0)
 green = (0, 255, 0)
 blue = (0, 0, 255)
+yellow = (255, 255, 0)
+magenta = (200, 0 ,200)
 white = (255, 255, 255)
 black = (0, 0, 0)
+color_list = [red, green, blue, yellow, magenta]
 
 game_window = pygame.display.set_mode((width, height))
 pygame.display.set_caption('Snake Game')
-pygame.display.set_icon(snake_head_img)
+pygame.display.set_icon(green_head_img)
 
 heading_font = pygame.font.Font('game_over.ttf', 250)
 box_font = pygame.font.Font('game_over.ttf', 75)
 score_font = pygame.font.Font('game_over.ttf',60)
+
+def MakeColorButtons(snake_size):
+    color_button_list = []
+    for y in range(62, 476, 100):
+        color_button_list.append(pygame.Rect(100, y, snake_size[0], snake_size[1]))
+    return color_button_list
 
 def GenerateApple(apple_size, width, height, wall_thickness, wall_rects):
     apple_x = random.randrange(wall_thickness, width - (apple_size + 1), apple_size)
@@ -61,7 +75,7 @@ def MoveSnake(snake, x_change, y_change, lead_x, lead_y, snake_length, size, wal
 
 def CheckClick(buttons):
     mouse_pos = pygame.mouse.get_pos()
-    for button_num, button in enumerate(button_list):
+    for button_num, button in enumerate(buttons):
         if button.collidepoint(mouse_pos) and pygame.mouse.get_pressed()[0] == 1:
             return (button_num, False)
     return (None, True)
@@ -103,9 +117,20 @@ def DrawGameWindow(win, width, height, bgcolor, snake, snake_size, snake_color, 
     WriteText(win, score_rect, 'Score: ' + str(score), score_font, white)
     pygame.display.update()
 
+def DrawColorWindow(win, width, height, color_buttons, color_list, snake_head_images, wall_rects):
+    win.fill(black)
+    for wall in wall_rects[:4]:
+        pygame.draw.rect(win, blue, wall)
+
+    for index, snake in enumerate(color_buttons):
+        pygame.draw.rect(win, color_list[index], snake)
+        rotated_img = pygame.transform.rotate(snake_head_images[index], -90)
+        win.blit(rotated_img, (snake[0] + (snake[2] - snake[3]), snake[1]))
+    pygame.display.update()
+
 button_box_width = 300
 button_box_height = 50
-button_list = [
+main_button_list = [
     pygame.Rect(int((width - button_box_width) / 2), 225, button_box_width, button_box_height),
     pygame.Rect(int((width - button_box_width) / 2), 325, button_box_width, button_box_height),
     pygame.Rect(int((width - button_box_width) / 2), 425, button_box_width, button_box_height),
@@ -133,30 +158,39 @@ wall_rects = [
 apple_size = snake_size
 apple_x, apple_y = GenerateApple(apple_size, width, height, wall_thickness, wall_rects)
 
+color_button_list = MakeColorButtons((width - 100 * 2,snake_size))
+
 game_exit = False
-running = True
+intro_running = True
 game_over = True
+color_running = False
 pressed_button = None
+pressed_color_button = 1
+snake_head_img = head_images[pressed_color_button]
 
 clock = pygame.time.Clock()
 
 while not game_exit:
 
-    while running:
+    while intro_running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 game_exit = True
                 game_over = True
-                running = False
+                intro_running = False
 
-        if running == True:
-            pressed_button, running = CheckClick(button_list)
-            DrawIntroWindow(game_window, width, height, button_list, green, red, button_box_width, button_box_height)
+        if intro_running == True:
+            pressed_button, intro_running = CheckClick(main_button_list)
+        DrawIntroWindow(game_window, width, height, main_button_list, green, red, button_box_width, button_box_height)
 
         clock.tick(10)
 
     if pressed_button == 0 and game_over == False:
         game_over = False
+        color_running = False
+    elif pressed_button == 1:
+        color_running = True
+        game_over = True
 
     while not game_over:
         for event in pygame.event.get():
@@ -192,16 +226,32 @@ while not game_exit:
 
         if game_over == False:
             snake_x, snake_y, snake_list, game_over = MoveSnake(snake_list, x_change, y_change, snake_x, snake_y, snake_length, snake_size, wall_rects)
-            snake_head_rect = pygame.Rect(snake_x, snake_y, snake_size, snake_size)
-            apple_rect = pygame.Rect(apple_x, apple_y, apple_size, apple_size)
-            snake_length, apple_x, apple_y = EatApple(snake_head_rect, apple_rect, width, height, snake_length, wall_thickness, wall_rects)
-            DrawGameWindow(game_window, width, height, black, snake_list, snake_size, green, apple_rect, wall_rects, snake_length, rotated_head_img)
+        snake_head_rect = pygame.Rect(snake_x, snake_y, snake_size, snake_size)
+        apple_rect = pygame.Rect(apple_x, apple_y, apple_size, apple_size)
+        snake_length, apple_x, apple_y = EatApple(snake_head_rect, apple_rect, width, height, snake_length, wall_thickness, wall_rects)
+        DrawGameWindow(game_window, width, height, black, snake_list, snake_size, color_list[pressed_color_button], apple_rect, wall_rects, snake_length, rotated_head_img)
 
         clock.tick(10)
 
+    while color_running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                game_exit = True
+                intro_running = False
+                game_over = True
+                color_running = False
+
+        if color_running == True:
+            pressed_color_button, color_running = CheckClick(color_button_list)
+        DrawColorWindow(game_window, width, height, color_button_list, color_list, head_images, wall_rects)
+        clock.tick(10)
+
     game_over = False
-    running = True
+    intro_running = True
+    color_running = False
     pressed_button = None
+
+    snake_head_img = head_images[pressed_color_button]
 
     x_change = 0
     y_change = snake_size
