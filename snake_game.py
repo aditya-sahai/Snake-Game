@@ -15,6 +15,12 @@ yellow_head_img = pygame.image.load('yellow_head.png')
 magenta_head_img = pygame.image.load('magenta_head.png')
 head_images = [red_head_img, green_head_img, blue_head_img, yellow_head_img, magenta_head_img]
 
+map_1_img = pygame.image.load('map_1.png')
+map_2_img = pygame.image.load('map_2.png')
+map_3_img = pygame.image.load('map_3.png')
+map_4_img = pygame.image.load('map_4.png')
+map_images = [map_1_img, map_2_img, map_3_img, map_4_img]
+
 red = (255, 0, 0)
 green = (0, 255, 0)
 blue = (0, 0, 255)
@@ -102,10 +108,10 @@ def DrawIntroWindow(win, width, height, buttons, color1, color2, box_width, box_
     WriteText(win, buttons[2], 'Change Map', box_font, black)
     pygame.display.update()
 
-def DrawGameWindow(win, width, height, bgcolor, snake, snake_size, snake_color, apple_rect, wall_rects, score, head_img, map_color):
+def DrawGameWindow(win, width, height, bgcolor, snake, snake_size, snake_color, apple_rect, wall_rects, score, head_img):
     win.fill(black)
     for wall in wall_rects:
-        pygame.draw.rect(win, map_color, wall)
+        pygame.draw.rect(win, blue  , wall)
     pygame.draw.rect(win, red, apple_rect)
     win.blit(head_img, (snake[-1]))
     for box in snake[:-1]:
@@ -123,6 +129,16 @@ def DrawColorWindow(win, width, height, color_buttons, color_list, snake_head_im
         pygame.draw.rect(win, color_list[index], snake)
         rotated_img = pygame.transform.rotate(snake_head_images[index], -90)
         win.blit(rotated_img, (snake[0] + (snake[2] - snake[3]), snake[1]))
+    pygame.display.update()
+
+def DrawMapWindow(win, map_images):
+    win.fill(black)
+    win.blit(map_images[0], (0, 0))
+    win.blit(map_images[1], (275, 0))
+    win.blit(map_images[2], (0, 275))
+    win.blit(map_images[3], (275, 275))
+    pygame.draw.line(win, white, (int(width / 2), 0), (int(width / 2), height))
+    pygame.draw.line(win, white, (0, int(height / 2)), (width, int(height / 2)))
     pygame.display.update()
 
 button_box_width = 300
@@ -180,8 +196,14 @@ map_4 = [
     pygame.Rect(100, 400, 350, wall_thickness),
     ]
 
-apple_size = snake_size
-apple_x, apple_y = GenerateApple(apple_size, width, height, wall_thickness, map_4)
+maps = [map_1, map_2, map_3, map_4]
+
+map_rects = [
+    pygame.Rect(0, 0, int(width / 2), int(height / 2)),
+    pygame.Rect(int(width / 2), 0, int(width / 2), int(height / 2)),
+    pygame.Rect(0, int(height / 2), int(width / 2), int(height / 2)),
+    pygame.Rect(int(width / 2), int(height / 2), int(width / 2), int(height / 2)),
+    ]
 
 color_button_list = MakeColorButtons((width - 100 * 2,snake_size))
 
@@ -189,9 +211,14 @@ game_exit = False
 intro_running = True
 game_over = True
 color_running = False
+map_running = False
 pressed_button = None
 pressed_color_button = 1
+pressed_map_button = 0
 snake_head_img = head_images[pressed_color_button]
+
+apple_size = snake_size
+apple_x, apple_y = GenerateApple(apple_size, width, height, wall_thickness, maps[pressed_map_button])
 
 clock = pygame.time.Clock()
 
@@ -213,9 +240,15 @@ while not game_exit:
     if pressed_button == 0 and game_over == False:
         game_over = False
         color_running = False
+        map_running = False
     elif pressed_button == 1:
         color_running = True
         game_over = True
+        map_running = False
+    elif pressed_button == 2:
+        game_over = True
+        color_running = False
+        map_running = True
 
     while not game_over:
         for event in pygame.event.get():
@@ -250,27 +283,32 @@ while not game_exit:
             rotated_head_img = pygame.transform.rotate(snake_head_img, -90)
 
         if game_over == False:
-            snake_x, snake_y, snake_list, game_over = MoveSnake(snake_list, x_change, y_change, snake_x, snake_y, snake_length, snake_size, map_4)
+            snake_x, snake_y, snake_list, game_over = MoveSnake(snake_list, x_change, y_change, snake_x, snake_y, snake_length, snake_size, maps[pressed_map_button])
         snake_head_rect = pygame.Rect(snake_x, snake_y, snake_size, snake_size)
         apple_rect = pygame.Rect(apple_x, apple_y, apple_size, apple_size)
-        snake_length, apple_x, apple_y = EatApple(snake_head_rect, apple_rect, width, height, snake_length, wall_thickness, map_1)
-        DrawGameWindow(game_window, width, height, black, snake_list, snake_size, color_list[pressed_color_button], apple_rect, map_4, snake_length, rotated_head_img, blue)
+        snake_length, apple_x, apple_y = EatApple(snake_head_rect, apple_rect, width, height, snake_length, wall_thickness, maps[pressed_map_button])
+        DrawGameWindow(game_window, width, height, black, snake_list, snake_size, color_list[pressed_color_button], apple_rect, maps[pressed_map_button], snake_length, rotated_head_img)
+
         if game_over == True:
             i = 1
-            while i <= 50:
+            while i <= 20:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         game_over = True
                         game_exit = True
                         color_running = False
                         intro_running = False
+
                 if game_exit:
                     break
+
                 game_window.fill(black)
                 WriteText(game_window, pygame.Rect(wall_thickness, wall_thickness, width - wall_thickness * 2, height - wall_thickness * 2), 'Score: ' + str(snake_length), heading_font, white)
                 pygame.display.update()
+
                 i += 1
                 clock.tick(10)
+
         clock.tick(10)
 
     while color_running:
@@ -284,6 +322,19 @@ while not game_exit:
         if color_running == True:
             pressed_color_button, color_running = CheckClick(color_button_list)
         DrawColorWindow(game_window, width, height, color_button_list, color_list, head_images, map_1)
+        clock.tick(10)
+
+    while map_running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                map_running = False
+                intro_running = False
+                game_over = True
+                game_exit = True
+
+        if map_running:
+            pressed_map_button, map_running = CheckClick(map_rects)
+        DrawMapWindow(game_window, map_images)
         clock.tick(10)
 
     game_over = False
