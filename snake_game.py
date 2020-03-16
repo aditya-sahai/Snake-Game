@@ -43,10 +43,7 @@ def GenerateApple(apple_size, width, height, wall_thickness, wall_rects):
     apple_y = random.randrange(wall_thickness, height - (apple_size + 1), apple_size)
     for rect in wall_rects:
         if rect.colliderect((apple_x, apple_y, apple_size, apple_size)):
-            apple_x -= apple_size
-            apple_y -= apple_size
-        if rect.colliderect((apple_x, apple_y, apple_size, apple_size)):
-            apple_x += 2 * apple_size
+            apple_x, apple_y = GenerateApple(apple_size, width, height, wall_thickness, wall_rects)
     return apple_x, apple_y
 
 def EatApple(head_rect, apple_rect, width, height, length, wall_thickness, wall_rects):
