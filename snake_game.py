@@ -287,7 +287,7 @@ while not game_exit:
         snake_head_rect = pygame.Rect(snake_x, snake_y, snake_size, snake_size)
         apple_rect = pygame.Rect(apple_x, apple_y, apple_size, apple_size)
         snake_length, apple_x, apple_y = EatApple(snake_head_rect, apple_rect, width, height, snake_length, wall_thickness, maps[pressed_map_button])
-        DrawGameWindow(game_window, width, height, black, snake_list, snake_size, color_list[pressed_color_button], apple_rect, maps[pressed_map_button], snake_length, rotated_head_img)
+        DrawGameWindow(game_window, width, height, black, snake_list, snake_size, color_list[pressed_color_button], apple_rect, maps[pressed_map_button], snake_length - 1, rotated_head_img)
 
         if game_over == True:
             i = 1
@@ -303,7 +303,7 @@ while not game_exit:
                     break
 
                 game_window.fill(black)
-                WriteText(game_window, pygame.Rect(wall_thickness, wall_thickness, width - wall_thickness * 2, height - wall_thickness * 2), 'Score: ' + str(snake_length), heading_font, white)
+                WriteText(game_window, pygame.Rect(wall_thickness, wall_thickness, width - wall_thickness * 2, height - wall_thickness * 2), 'Score: ' + str(snake_length - 1), heading_font, white)
                 pygame.display.update()
 
                 i += 1
