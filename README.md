@@ -16,4 +16,4 @@ When the program is started then the menu page is displayed in which the player 
 ##### Controls Page:
 ![Controls Page](https://github.com/adityashai925/Snake_Game/blob/master/GamePlay/controls-page.png?raw=true)
 ##### Playing Images:
-![Gameplay](https://github.com/adityashai925/Snake_Game/blob/master/GamePlay/maps-image-copy.png?raw=true)
+![Gameplay](https://github.com/adityashai925/Snake_Game/blob/master/GamePlay/maps-image.png?raw=true)
